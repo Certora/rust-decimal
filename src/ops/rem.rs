@@ -1,6 +1,8 @@
 use crate::constants::{MAX_I32_SCALE, MAX_PRECISION_I32, POWERS_10};
 use crate::decimal::{CalculationResult, Decimal};
 use crate::ops::common::{Buf12, Buf16, Buf24, Dec64};
+// Certora
+use alloc::boxed::Box;
 
 pub(crate) fn rem_impl(d1: &Decimal, d2: &Decimal) -> CalculationResult {
     if d2.is_zero() {
@@ -137,7 +139,8 @@ fn rem_full(d1: &Dec64, d2: &Buf12, scale: i32) -> CalculationResult {
         d2.hi().leading_zeros()
     };
 
-    let mut buffer = Buf24::zero();
+    // Certora: to avoid having an array on the stack and then iterate over it    
+    let mut buffer = Box::new(Buf24::zero());
     let mut overflow = 0u32;
     buffer.set_low64(d1.low64 << shift);
     buffer.set_mid64(((d1.mid() as u64).wrapping_add((d1.hi as u64) << 32)) >> (32 - shift));

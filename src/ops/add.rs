@@ -1,6 +1,8 @@
 use crate::constants::{MAX_I32_SCALE, POWERS_10, SCALE_MASK, SCALE_SHIFT, SIGN_MASK, U32_MASK, U32_MAX};
 use crate::decimal::{CalculationResult, Decimal};
 use crate::ops::common::{Buf24, Dec64};
+// Certora
+use alloc::boxed::Box;
 
 pub(crate) fn add_impl(d1: &Decimal, d2: &Decimal) -> CalculationResult {
     add_sub_internal(d1, d2, false)
@@ -273,7 +275,8 @@ fn unaligned_add(
         }
     }
 
-    let mut buffer = Buf24::zero();
+    // Certora: to avoid having an array on the stack and then iterate over it
+    let mut buffer = Box::new(Buf24::zero()); 
     buffer.set_low64(low64);
     buffer.set_mid64(tmp64);
 

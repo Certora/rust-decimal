@@ -1,6 +1,8 @@
 use crate::constants::{BIG_POWERS_10, MAX_I64_SCALE, MAX_PRECISION_U32, U32_MAX};
 use crate::decimal::{CalculationResult, Decimal};
 use crate::ops::common::Buf24;
+// Certora
+use alloc::boxed::Box;
 
 pub(crate) fn mul_impl(d1: &Decimal, d2: &Decimal) -> CalculationResult {
     if d1.is_zero() || d2.is_zero() {
@@ -11,7 +13,8 @@ pub(crate) fn mul_impl(d1: &Decimal, d2: &Decimal) -> CalculationResult {
 
     let mut scale = d1.scale() + d2.scale();
     let negative = d1.is_sign_negative() ^ d2.is_sign_negative();
-    let mut product = Buf24::zero();
+    // Certora: to avoid having an array on the stack and then iterate over it
+    let mut product = Box::new(Buf24::zero());
 
     // See if we can optimize this calculation depending on whether the hi bits are set
     if d1.hi() | d1.mid() == 0 {
